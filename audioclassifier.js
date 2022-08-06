@@ -1,15 +1,13 @@
 import * as tf from '@tensorflow/tfjs-node'
-//import tf from '@tensorflow/tfjs'
-import fetch from 'node-fetch';
-//import wav from "node-wav";
+import fetch from 'node-fetch'
 /* https://github.com/audiojs/audio-decode#supported-formats */
-import  decode  from 'audio-decode';
+import  decode  from 'audio-decode'
 /* https://github.com/audiocogs/vorbis.js#node-usage*/
-import * as AV from 'vorbis.js';
-import * as ogg from 'ogg.js';
+import * as AV from 'vorbis.js'
+import * as ogg from 'ogg.js'
 /*https://github.com/audiocogs/opus.js#node-usage*/
 import  * as opus from 'opus.js'
-import { EssentiaWASM, EssentiaModel } from "essentia.js";
+import { EssentiaWASM, EssentiaModel } from "essentia.js"
 
 // DOWN LIMIT TO CONSIDER A LABEL/CLASS
 const THRESHOLD = 0.2
@@ -17,32 +15,32 @@ const THRESHOLD = 0.2
 /* MagnaTagATune */
 const musiCNNLabels = ["guitar", "classical", "slow", "techno", "strings", "drums", "electronic", "rock", "fast", "piano", "ambient", "beat", "violin", "vocal", "synth", "female", "indian", "opera", "male", "singing", "vocals", "no vocals", "harpsichord", "loud", "quiet", "flute", "woman", "male vocal", "no vocal", "pop", "soft", "sitar", "solo", "man", "classic", "choir", "voice", "new age", "dance", "male voice", "female vocal", "beats", "harp", "cello", "no voice", "weird", "country", "metal", "female voice", "choral"] 
 
-//const essentia = new Essentia(EssentiaWASM);
-let extractor = null;
-let musicnn = null;
+let extractor = null
+let musicnn = null
 
-const isAudio = (url) => {
-  console.log(url)
-  return /\.(wav|ogg|oga|mp3)$/.test(url);
+const isAudio = (url) => {  
+  return /\.(wav|ogg|oga|mp3)$/.test(url)
 }
 
 class AudioClassifier {
   constructor(params) {
-    this.loadModel(params);
+    this.loadModel(params)
   }
 
   async loadModel({ modelUrl }) {
     if (!modelUrl || modelUrl === "") {
-      console.error("audioteachablemachine-node] -", "Missing model URL!");
-      this.error = "Missing model URL!";
-      return null;
+      console.error("audioteachablemachine-node] -", "Missing model URL!")
+      this.error = "Missing model URL!"
+      return null
     }
 
     try {
       
-      musicnn = new EssentiaModel.TensorflowMusiCNN(tf, "file://"+modelUrl, true);     
+      musicnn = new EssentiaModel.TensorflowMusiCNN(tf, "file://"+modelUrl, true)     
 
-      await musicnn.initialize(); 
+      await musicnn.initialize().then(() => console.log("essentia-tfjs model ready..."));
+      //console.log(`Using TF ${tf.getBackend()} backend`);
+
 
       extractor = new EssentiaModel.EssentiaTFInputExtractor(
           EssentiaWASM,
@@ -51,53 +49,53 @@ class AudioClassifier {
       )
 
     } catch (e) {
-      console.error("[audioteachablemachine-node] -", e);
+      console.error("[audioteachablemachine-node] -", e)
     }
   }
 
   async checkModel(cb) {
-    const { model } = this;
+    const { model } = this
 
     if (model) {
-      return Promise.resolve({ cb });
+      return Promise.resolve({ cb })
     }
 
-    return Promise.reject({ message: "Loading model" });
+    return Promise.reject({ message: "Loading model" })
   }
 
   async loadAudioAndDecode(audioPath) {
-    const response = await fetch(audioPath);       
-    const audioBuffer = await response.arrayBuffer();
-    //console.log(audioBuffer)
-    // FIX SOMETHING: const audioArray = new Float32Array(audioBuffer);
-    //const buff = Buffer.from(audioBuffer, 'base64');
-    //console.log(buff)  
-    //const decodedAudio = await decode(buff)
-    //console.log(audioBuffer) 
-    const decodedAudio = await decode(audioBuffer) 
-    //console.log(decodedAudio)        
-    const audioArray = decodedAudio._data;    
-    //const decodedAudio = wav.decode(audioBuffer);
-    //const audioArray = decodedAudio.channelData[0];    
-    return audioArray; 
+    const response = await fetch(audioPath)       
+    const audioBuffer = await response.arrayBuffer()    
+    const decodedAudio = await decode(audioBuffer)     
+    const audioArray = decodedAudio._data   
+    return audioArray 
 }
 
   async analyse(buffer) {
-    //const audioData = await extractor.downsampleAudioBuffer(buffer);
-    const features = await extractor.computeFrameWise(buffer, 256);    
-    //await musicnn.initialize();    
-    const predictions = await musicnn.predict(features, true);  
-    return predictions;
+    const featuresStart = Date.now()    
+    const features = await extractor.computeFrameWise(buffer, 256) 
+    const extractorTime = Date.now() - featuresStart  
+    //console.log('computeFeatures: ', features.melSpectrum);  
+    const predictioStart = Date.now()       
+    const predictions = await musicnn.predict(features, true)
+    const predictionTime = Date.now() - predictioStart
+    
+    const predictObj = {
+      extractTime:extractorTime,
+      predictTime:predictionTime,
+      labels:predictions
+    }
+    return predictObj
   }
 
   async classify(params) {
-    const { audioUrl } = params;        
+    const { audioUrl } = params        
     if (!isAudio(audioUrl)) {
-      return Promise.reject({ error: "Audio URL is not valid!" });
+      return Promise.reject({ error: "Audio URL is not valid!" })
     }
 
     if (this.error) {
-      return Promise.reject({ error: this.error });
+      return Promise.reject({ error: this.error })
     }
 
     return await  this.inference(params)    
@@ -105,27 +103,25 @@ class AudioClassifier {
 
   async inference({ audioUrl }) {
     try {
-      const audio = await this.loadAudioAndDecode(audioUrl);
-      const analysisOutput = await this.analyse(audio);
-      /* number must be equals to musiCNNLabels.length */
-      //console.log(analysisOutput[0].length) 
-      
+      const audio = await this.loadAudioAndDecode(audioUrl)
+      let analysisOutput = await this.analyse(audio) 
+      const labels = analysisOutput.labels
       let predictions = []
-      for(let segment in analysisOutput){  
-        const obj = {};
+      for(let segment in labels){  
+        const obj = {}
         musiCNNLabels.forEach((element, index) => {
-          if(analysisOutput[segment][index] > THRESHOLD){
-            obj[element] = analysisOutput[segment][index];
+          if(labels[segment][index] > THRESHOLD){
+            obj[element] = labels[segment][index]
           }  
-        });
+        })
         predictions.push(obj)
-      }      
-      //console.log(predictions);
-      return predictions;
+      } 
+      analysisOutput.labels = predictions         
+      return analysisOutput
     } catch (error) {
-      return Promise.reject({ error });
+      return Promise.reject({ error })
     }
   }
 }
 
-export default AudioClassifier;
+export default AudioClassifier
