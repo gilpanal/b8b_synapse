@@ -1,0 +1,29 @@
+{
+  "name": "b8b_synapse",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@tensorflow/tfjs-node": "^3.19.0",
+    "audio-decode": "^1.4.0",
+    "av": "^0.4.9",
+    "essentia.js": "^0.1.3",
+    "express": "^4.18.1",
+    "install": "^0.13.0",
+    "node-fetch": "^3.2.10",
+    "node-wav": "0.0.2",
+    "npm": "^8.15.1",
+    "ogg.js": "^0.1.0",
+    "opus.js": "^0.1.1",
+    "parse-data-url": "^4.0.1",
+    "pureimage": "^0.3.14",
+    "vorbis.js": "^0.1.1"
+  }
+}
