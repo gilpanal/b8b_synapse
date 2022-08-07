@@ -10,6 +10,7 @@ const modelImage = new ImageTeachableMachine({
 })
 
 const AUDIO_MODEL_NAME = 'mtt-musicnn-1'
+//const AUDIO_MODEL_NAME = 'mtt-vgg-1'
 const modelAudio = new AudioTeachableMachine({
   modelUrl: `./${AUDIO_MODEL_NAME}/model.json`
 })
