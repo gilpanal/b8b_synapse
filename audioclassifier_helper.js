@@ -1,3 +1,4 @@
+import hash from 'object-hash'
 import { MUSICNNLABELS, THRESHOLD } from './audioclassifier.js'
 
 function getPredictionsWithLabel(preds) {
@@ -15,10 +16,12 @@ function getPredictionsWithLabel(preds) {
     return predictions
 }
 
-function calculateAveragePred(input) {
+function calculateHashAndAveragePred(input) {
     const numberLabels = Object.keys(input)
     for (let label of numberLabels) {
         input[label]['average'] = input[label]['average'] / input[label]['repeats']
+        const label_id = hash(input[label])  
+        input[label].label_id = label_id 
     }
     return input
 }
@@ -69,7 +72,7 @@ export default function getFinalPredResult(analysis) {
 
     const resultPrev = getPredictionsGrouped(labelsPreds)
 
-    const resultFinal = calculateAveragePred(resultPrev)
+    const resultFinal = calculateHashAndAveragePred(resultPrev)
 
     return resultFinal
 }

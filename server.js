@@ -1,5 +1,6 @@
 /* https://github.com/SashiDo/teachablemachine-node#expressjs */
 import express from 'express'
+import hash from 'object-hash'
 import ImageTeachableMachine from './imageclassifier.js'
 import AudioTeachableMachine from './audioclassifier.js'
 import { THRESHOLD } from './audioclassifier.js'
@@ -37,6 +38,7 @@ app.get('/audio/classify', async (req, res) => {
   }).then((predictions) => {    
     predictions.model = AUDIO_MODEL_NAME
     predictions.threshold = THRESHOLD
+    predictions.predict_id = hash(predictions)    
     console.log(predictions)
     return res.json(predictions)
   }).catch((e) => {
