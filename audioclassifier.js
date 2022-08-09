@@ -82,8 +82,8 @@ class AudioClassifier {
     const predictionTime = Date.now() - predictioStart
 
     const predictObj = {
-      extractTime: extractorTime,
-      predictTime: predictionTime,
+      extract_time: extractorTime,
+      predict_time: predictionTime,
       labels: predictions
     }
     return predictObj
