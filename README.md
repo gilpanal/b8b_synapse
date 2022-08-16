@@ -16,6 +16,7 @@ The deep learning models used are TensorFlow models available in Essentia for va
 
 ## Requirements:
 - Node.js (v16)
+- For ```@tensorflow/tfjs-node```, please check: https://www.npmjs.com/package/@tensorflow/tfjs-node
 
 ## How to run and test it locally:
 1. ```git clone https://github.com/gilpanal/b8b_synapse.git```
