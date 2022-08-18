@@ -26,6 +26,7 @@
     "opus.js": "^0.1.1",
     "parse-data-url": "^4.0.1",
     "pureimage": "^0.3.14",
-    "vorbis.js": "^0.1.1"
+    "vorbis.js": "^0.1.1",
+    "wave-resampler": "^1.0.0"
   }
 }

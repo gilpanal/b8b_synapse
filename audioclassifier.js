@@ -1,5 +1,6 @@
 import * as tf from '@tensorflow/tfjs-node'
 import fetch from 'node-fetch'
+import resampler  from 'wave-resampler';
 /* https://github.com/audiojs/audio-decode#supported-formats */
 import decode from 'audio-decode'
 /* https://github.com/audiocogs/vorbis.js#node-usage*/
@@ -81,14 +82,19 @@ class AudioClassifier {
     if(!decodedAudio){     
       return {error:"Decode error"}
     } else{
-      const audioArray = decodedAudio._data
+      const audioArray = decodedAudio
       return audioArray
     }
     
   }
   async analyse(buffer) {
+    let newSamples = buffer._data
+    if(buffer.sampleRate !== 16000){
+      console.log('resample...')
+      newSamples = resampler.resample(buffer._data, buffer.sampleRate, 16000);
+    }    
     const featuresStart = Date.now()
-    const features = await extractor.computeFrameWise(buffer, 256)
+    const features = await extractor.computeFrameWise(newSamples, 256)
     const extractorTime = Date.now() - featuresStart
     console.log('start prediction')
     //console.log('computeFeatures: ', features.melSpectrum);  
