@@ -19,7 +19,6 @@
     "flac.js": "^0.2.1",
     "node-fetch": "^3.2.10",
     "node-wav": "0.0.2",
-    "npm": "^8.15.1",
     "object-hash": "^3.0.0",
     "ogg.js": "^0.1.0",
     "opus.js": "^0.1.1",
